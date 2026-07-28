@@ -1,0 +1,104 @@
+// SPDX-License-Identifier: MIT
+module javaprops_tests @test;
+
+import javaprops;
+
+fn void test_basic_properties()
+{
+	String src = `
+a=1
+b:2
+c 3
+	`;
+
+	JavaProperties props = javaprops::tparse(src)!!;
+	defer props.free();
+
+	assert(props.get("a")!! == "1");
+	assert(props.get("b")!! == "2");
+	assert(props.get("c")!! == "3");
+}
+
+fn void test_empty_values()
+{
+	String src = `
+a=
+b
+	`;
+
+	JavaProperties props = javaprops::tparse(src)!!;
+	defer props.free();
+
+	assert(props.get("a")!! == "");
+	assert(props.get("b")!! == "");
+}
+
+fn void test_comments_are_ignored()
+{
+	String src = `
+# comment
+! new comment
+	`;
+
+	JavaProperties props = javaprops::tparse(src)!!;
+	defer props.free();
+
+	assert(props.len() == 0);
+}
+
+fn void test_blank_lines()
+{
+	String src = `
+a=1
+
+
+b:2
+	`;
+
+	JavaProperties props = javaprops::tparse(src)!!;
+	defer props.free();
+
+	assert(props.len() == 2);
+}
+
+fn void test_escaped_keys()
+{
+	String src = `
+a\ a=1
+b\=b=2
+c\:c=3
+a=b\nc\t
+smile=\u263A
+\u2603=snowman
+	`;
+
+	JavaProperties props = javaprops::tparse(src)!!;
+	defer props.free();
+
+	assert(props.get("a a")!! == "1");
+	assert(props.get("b=b")!! == "2");
+	assert(props.get("c:c")!! == "3");
+	assert(props.get("a")!! == "b\nc\t");
+	assert(props.get("☃")!! == "snowman");
+}
+
+fn void test_line_continuation()
+{
+	String src = `
+a=1\
+2
+
+b=1\
+2\
+3
+
+c=1
+	`;
+
+	JavaProperties props = javaprops::tparse(src)!!;
+	defer props.free();
+
+	assert(props.get("a")!! == "12");
+	assert(props.get("b")!! == "123");
+	assert(props.get("c")!! == "1");
+}
