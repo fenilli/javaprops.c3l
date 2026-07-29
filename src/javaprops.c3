@@ -3,7 +3,7 @@ module javaprops;
 
 import std::io, std::collections::map;
 
-alias JavaProperties = HashMap{String, String};
+alias JavaProperties = OrderedMap{String, String};
 
 fn JavaProperties? load(Allocator allocator, InStream stream) => @pool()
 {
@@ -33,6 +33,16 @@ fn JavaProperties? tload(InStream stream)
 	return load(tmem, stream);
 }
 
+fn void? save(OutStream stream, JavaProperties* properties, String separator = "=", String header = "")
+{
+	if (header.len) io::fprintfn(stream, "# %s", header)!;
+
+	properties.@each(; String key, String value)
+	{
+		io::fprintfn(stream, "%s%s%s", key, separator, value)!;
+	};
+}
+
 fn JavaProperties? parse(Allocator allocator, String string)
 {
 	ByteReader reader;
@@ -43,6 +53,27 @@ fn JavaProperties? parse(Allocator allocator, String string)
 fn JavaProperties? tparse(String string)
 {
 	return parse(tmem, string);
+}
+
+fn String? encode(
+	Allocator allocator,
+	JavaProperties* properties,
+	String separator = "=",
+	String header = ""
+) => @pool()
+{
+	DString src;
+	save(&src, properties, separator, header)!;
+
+	return src.copy_str(allocator);
+}
+
+fn String? tencode(JavaProperties* properties, String separator = "=", String header = "")
+{
+	DString src;
+	save(&src, properties, separator, header)!;
+
+	return src.str_view();
 }
 
 module javaprops @private;
