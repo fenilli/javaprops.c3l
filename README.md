@@ -11,6 +11,8 @@ A small parser for Java .properties files written in C3.
 
 ## Quick Start
 
+You can easily parse it, and get properties from it:
+
 ```c3
 import javaprops;
 
@@ -22,23 +24,88 @@ fn int main()
     path = C:\\Program Files\\App
     `;
 
-    JavaProperties props = javaprops::tparse(text)!!;
+    JavaProperties java_properties = javaprops::tparse(text)!!;
 
-    io::printfn("Name: %s", props.get("name")!!);
-    io::printfn("Language: %s", props.get("language")!!);
-    io::printfn("Path: %s", props.get("path")!!);
+    io::printfn("Name: %s", java_properties.get("name")!!);
+    io::printfn("Language: %s", java_properties.get("language")!!);
+    io::printfn("Path: %s", java_properties.get("path")!!);
 
     return 0;
 }
+
+// Output:
+// Name: Gustavo Fenilli
+// Language: C3
+// Path: C:\Program Files\App
+```
+
+Also encode it and save the way you want:
+
+```c3
+import javaprops;
+
+fn int main()
+{
+    JavaProperties java_properties;
+    java_properties.set("a", "1");
+	java_properties.set("b", "2");
+
+    String properties = javaprops::tencode(&java_properties)!!;
+
+    io::printfn("%s", properties);
+
+    return 0;
+}
+
+// Output:
+// a=1
+// b=2
+```
+
+Encoding accepts 2 aditional parameters `separator` and `header`:
+
+```c3
+import javaprops;
+
+fn int main()
+{
+    JavaProperties java_properties;
+    java_properties.set("a", "1");
+	java_properties.set("b", "2");
+
+    String properties = javaprops::tencode(&java_properties, ":", "Machine Generated")!!;
+
+    io::printfn("%s", properties);
+
+    return 0;
+}
+
+// Output:
+// # Machine Generated
+// a:1
+// b:2
 ```
 
 ## Installation
 
-1. Clone or add this repository as a submodule into `<YOUR_PROJECT>/lib` or the where your `dependency-search-paths` is:
-    - `git clone https://github.com/fenilli/javaprops.c3l.git <YOUR_PROJECT>/lib`
-    - `git submodule add https://github.com/fenilli/javaprops.c3l.git <YOUR_PROJECT>/lib`
-2. Add `javaprops` to the `dependencies` list in your `project.json`
-3. Done!
+Add the library by cloning or adding as a submodule to your C3 project folder pointed by `dependency-search-paths`:
+
+```sh
+# Cloning
+git clone https://github.com/fenilli/javaprops.c3l.git <YOUR_PROJECT_DEPENDENCY_PATH>
+
+# Submodule
+git submodule add https://github.com/fenilli/javaprops.c3l.git <YOUR_PROJECT_DEPENDENCY_PATH>
+```
+
+Then update your project.json to include:
+
+```
+{
+    "dependency-search-paths": [ "lib" ],
+    "dependencies": [ "javaprops" ]
+}
+```
 
 ## License
 
